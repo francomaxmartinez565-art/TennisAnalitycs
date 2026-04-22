@@ -48,36 +48,54 @@ historial_j1 = cargar_historial(j1_nombre)
 st.divider()
 historial_j2 = cargar_historial(j2_nombre)
 
-# --- LÓGICA DEL VEREDICTO PROFESIONAL ---
+# --- LÓGICA DEL VEREDICTO PROFESIONAL v2.1 ---
 if st.button("GENERAR ANÁLISIS PROFESIONAL"):
-    st.header("📝 Veredicto Técnico Final")
+    st.header("📝 Informe Técnico del Especialista")
     
     # Cálculos promedios
     prom_p1_j1 = sum([p['p1'] for p in historial_j1]) / 3
+    prom_p2_j1 = sum([p['p2'] for p in historial_j1]) / 3
+    prom_df_j1 = sum([p['df'] for p in historial_j1]) / 3
+    
     prom_p1_j2 = sum([p['p1'] for p in historial_j2]) / 3
+    prom_p2_j2 = sum([p['p2'] for p in historial_j2]) / 3
+    prom_df_j2 = sum([p['df'] for p in historial_j2]) / 3
     
-    # Chequeo de superficie (Adaptación)
-    surf_check_j1 = sum([1 for p in historial_j1 if p['surf'] == superficie_actual])
-    surf_check_j2 = sum([1 for p in historial_j2 if p['surf'] == superficie_actual])
+    # Análisis de Superficie
+    surf_j1 = sum([1 for p in historial_j1 if p['surf'] == superficie_actual])
+    surf_j2 = sum([1 for p in historial_j2 if p['surf'] == superficie_actual])
 
-    col_v1, col_v2 = st.columns(2)
+    col_res1, col_res2 = st.columns(2)
     
-    with col_v1:
-        st.subheader("📊 Comparativa de Rendimiento")
-        if prom_p1_j1 > prom_p1_j2:
-            st.write(f"- **Dominio de Saque:** {j1_nombre} presenta mayor efectividad con el primer servicio ({prom_p1_j1:.1f}% vs {prom_p1_j2:.1f}%).")
-        else:
-            st.write(f"- **Dominio de Saque:** {j2_nombre} lidera la efectividad con el primer servicio.")
-            
-        st.write(f"- **Adaptación a {superficie_actual}:** {j1_nombre} jugó {surf_check_j1}/3 partidos recientes en esta superficie; {j2_nombre} jugó {surf_check_j2}/3.")
+    with col_res1:
+        st.subheader("📊 Métricas de Rendimiento")
+        st.write(f"**Servicio:** {j1_nombre} gana el {prom_p1_j1:.1f}% con el primero, mientras que {j2_nombre} está en {prom_p1_j2:.1f}%.")
+        st.write(f"**Segundos Saques:** {j1_nombre} ({prom_p2_j1:.1f}%) vs {j2_nombre} ({prom_p2_j2:.1f}%).")
+        st.write(f"**Disciplina:** Promedio de DFs: {prom_df_j1:.1f} vs {prom_df_j2:.1f}.")
 
-    with col_v2:
-        st.subheader("💡 Análisis de Valor (Value Bet)")
-        favorito_ia = j1_nombre if j1_cuota < j2_cuota else j2_nombre
-        st.write(f"- **Mercado:** Las cuotas sugieren un partido de {abs(j1_cuota - j2_cuota):.2f} de diferencia.")
+    with col_res2:
+        st.subheader("🎯 Factores de Decisión")
+        # Detección de Value Bet
+        if prom_p1_j1 > prom_p1_j2 + 5 and j1_cuota > 1.80:
+            st.success(f"VALOR DETECTADO: {j1_nombre} tiene métricas superiores a lo que indica su cuota de {j1_cuota}.")
         
-    st.info(f"**Sugerencia de Especialista:** El cruce entre {j1_nombre} ({j1_rank}) y {j2_nombre} ({j2_rank}) en {superficie_actual} se define por la estabilidad. " + 
-            (f"{j1_nombre} llega con mejor rodaje específico." if surf_check_j1 > surf_check_j2 else f"{j2_nombre} parece estar mejor adaptado."))
+        # Alerta de Superficie
+        if surf_j1 < 2:
+            st.warning(f"ADAPTACIÓN: {j1_nombre} solo tiene {surf_j1} partido(s) reciente(s) en {superficie_actual}.")
+
+    # Párrafo Final Estilo Profesional
+    st.divider()
+    resumen_ia = f"El duelo entre {j1_nombre} (Rank {j1_rank}) y {j2_nombre} (Rank {j2_rank}) presenta un escenario "
+    if abs(prom_p1_j1 - prom_p1_j2) < 4:
+        resumen_ia += "de máxima paridad en los servicios. La clave estará en los puntos ganados con el segundo saque, donde "
+    else:
+        resumen_ia += f"donde {j1_nombre if prom_p1_j1 > prom_p1_j2 else j2_nombre} llega con una ventaja mecánica en potencia. "
+    
+    resumen_ia += f"Considerando la cuota de {j1_cuota} vs {j2_cuota}, el mercado espera un partido cerrado. "
+    resumen_ia += f"Recomendación técnica: Evaluar {'Handicap' if abs(j1_rank - j2_rank) < 20 else 'Ganador directo'}."
+    
+    st.info(resumen_ia)
+
 
 
 
