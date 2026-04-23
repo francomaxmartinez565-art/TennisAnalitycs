@@ -17,11 +17,11 @@ with col_m1:
 with col_m2:
     j1_nom = st.text_input("Jugador 1", "Djokovic")
     j1_rank = st.number_input("Rank J1", 1, 1000, 25) # Recuperamos el Ranking
-    j1_cuota = st.number_input("Cuota J1", 1.0, 50.0, 1.56)
+    j1_cuota = st.number_input("Cuota J1", 1.0, 50.0, 1.90)
 with col_m3:
     j2_nom = st.text_input("Jugador 2", "Federer")
     j2_rank = st.number_input("Rank J2", 1, 1000, 155) # Recuperamos el Ranking
-    j2_cuota = st.number_input("Cuota J2", 1.0, 50.0, 2.40)
+    j2_cuota = st.number_input("Cuota J2", 1.0, 50.0, 1.90)
 
 st.divider()
 
