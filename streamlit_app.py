@@ -35,7 +35,7 @@ def cargar_jugador_full(nombre):
             with c1: rival = st.text_input(f"Rival", f"Rival {i+1}", key=f"r_{nombre}_{i}")
             with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió", "Gano por retiro", "Perdio por retiro"], key=f"res_{nombre}_{i}")
             with c2_r: r_rank = st.number_input("Rank Rival", 1, 1000, 100, key=f"rr_{nombre}_{i}")
-            with c3: surf = st.selectbox(f"Surf", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
+            with c3: surf = st.selectbox(f"Superficie", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
             
             st.markdown("**Estadísticas del Match:**")
             # Ampliamos a más columnas para que entren G2S, G1Dev y G2Dev
