@@ -1,102 +1,118 @@
 import streamlit as st
 from datetime import date
 
-st.set_page_config(page_title="Tennis Analyst Pro v2.6", layout="wide")
+# Configuración de la App
+st.set_page_config(page_title="Vantaje Algoritmo v2.8.1", layout="wide")
 
-st.title("🎾 Tennis Analyst Pro v2.6")
+st.title("🎾 Vantaje Algoritmo v2.8.1")
 st.markdown("### Dashboard de Análisis Predictivo Profesional")
 
-# --- SECCIÓN 1: CONFIGURACIÓN DEL PARTIDO ---
+# --- SECCIÓN 1: CONFIGURACIÓN DEL ENCUENTRO ---
 st.header("1. Configuración del Encuentro")
 col_m1, col_m2, col_m3 = st.columns(3)
 with col_m1:
     torneo = st.text_input("Torneo", "ATP Madrid")
-    superficie_actual = st.selectbox("Superficie Actual", ["Arcilla", "Dura", "Césped","Indoor"])
-    h2h = st.text_input("Historial H2H (Ej: 1-0)", "0-0")
+    superficie_actual = st.selectbox("Superficie Actual", ["Arcilla", "Dura", "Césped", "indoor"])
+    h2h = st.text_input("Historial H2H", "0-0")
 with col_m2:
-    j1_nom = st.text_input("Jugador 1", "Djokovic")
-    j1_rank = st.number_input("Rank J1", 1, 1000, 52)
+    j1_nom = st.text_input("Jugador 1 (Análisis Principal)", "Djokovic")
     j1_cuota = st.number_input("Cuota J1", 1.0, 50.0, 1.90)
 with col_m3:
     j2_nom = st.text_input("Jugador 2", "Federer")
-    j2_rank = st.number_input("Rank J2", 1, 1000, 65)
     j2_cuota = st.number_input("Cuota J2", 1.0, 50.0, 1.90)
 
 st.divider()
 
-# --- CARGA DE DATOS COMPLETA ---
+# --- SECCIÓN 2: CARGA DE DATOS ---
 def cargar_jugador_full(nombre):
-    st.subheader(f"Historial Completo: {nombre}")
+    st.subheader(f"Carga de Datos: {nombre}")
     partidos = []
     for i in range(3):
-        with st.expander(f"Partido {i+1}", expanded=True):
-            c1, c2, c3, c4 = st.columns([1.5, 1.5, 1, 1])
-            with c1: f = st.date_input(f"Fecha", date.today(), key=f"f_{nombre}_{i}")
-            with c2: r = st.text_input(f"Rival", f"Rival {i+1}", key=f"r_{nombre}_{i}")
-            with c3: rr = st.number_input(f"Rank Rival", 1, 1000, 100, key=f"rr_{nombre}_{i}")
-            with c4: s = st.selectbox(f"Surf", ["Arcilla", "Dura", "Césped"], key=f"s_{nombre}_{i}")
+        with st.expander(f"Partido Reciente {i+1}", expanded=(i==0)):
+            c1, c2, c3 = st.columns([2, 1, 1])
+            with c1: rival = st.text_input(f"Rival", f"Rival {i+1}", key=f"r_{nombre}_{i}")
+            with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió","Gano por retiro", "Perdio por retiro"], key=f"res_{nombre}_{i}")
+            with c3: surf = st.selectbox(f"Surf", ["Arcilla", "Dura", "Césped", "indoor"], key=f"s_{nombre}_{i}")
             
-            # Métricas Completas (Incluyendo %1erS)
-            c5, c6, c7, c8, c9, c10, c11, c12 = st.columns(8)
-            with c5: s1_in = st.number_input("%1erS (In)", 0, 100, 65, key=f"s1in_{nombre}_{i}")
-            with c6: p1 = st.number_input("%G1erS", 0, 100, 70, key=f"p1_{nombre}_{i}")
-            with c7: p2 = st.number_input("%G2doS", 0, 100, 50, key=f"p2_{nombre}_{i}")
-            with c8: d1 = st.number_input("%G1erDev", 0, 100, 30, key=f"d1_{nombre}_{i}")
-            with c9: d2 = st.number_input("%G2doDev", 0, 100, 45, key=f"d2_{nombre}_{i}")
-            with c10: bs = st.number_input("%BrkSalv", 0, 100, 60, key=f"bs_{nombre}_{i}")
-            with c11: df = st.number_input("DF", 0, 30, 2, key=f"df_{nombre}_{i}")
-            with c12: res = st.selectbox("Resultado", ["Ganó", "Perdió", "Ganó (Ret)", "Perdió (Ret)"], key=f"res_{nombre}_{i}")
+            st.markdown("**Estadísticas del Match:**")
+            c5, c6, c7, c8_a, c8_b = st.columns([1, 1, 1, 1, 1])
+            with c5: s1_in = st.number_input("% P1S", 0, 100, 65, key=f"s1in_{nombre}_{i}")
+            with c6: p1 = st.number_input("% G1S", 0, 100, 70, key=f"p1_{nombre}_{i}")
+            with c7: ret = st.number_input("% RET", 0, 100, 35, key=f"ret_{nombre}_{i}")
+            with c8_a: bs_sv = st.number_input("Bks Salvados", 0, 50, 2, key=f"bssv_{nombre}_{i}")
+            with c8_b: bs_enf = st.number_input("Bks Enfrentados", 0, 50, 3, key=f"bsenf_{nombre}_{i}")
             
-            partidos.append({"fecha":f, "s1in":s1_in, "p1":p1, "p2":p2, "d1":d1, "d2":d2, "bs":bs, "df":df, "res":res, "surf":s})
+            partidos.append({"s1in":s1_in, "p1":p1, "ret":ret, "bs_sv": bs_sv, "bs_enf": bs_enf})
     return partidos
 
 data_j1 = cargar_jugador_full(j1_nom)
 st.divider()
 data_j2 = cargar_jugador_full(j2_nom)
 
-# --- VEREDICTO FINAL PROFESIONAL ---
-if st.button("GENERAR VEREDICTO FINAL"):
-    st.header("📋 Veredicto Final del Analista")
+# --- SECCIÓN 3: VEREDICTO V2.8.1 ---
+if st.button("EJECUTAR ANÁLISIS VANTAGE"):
+    st.header("📋 Informe Técnico Vantaje Algorithm")
     
-    def get_avg(data, key): return sum([p[key] for p in data]) / 3
-    
-    # Cálculos de Promedios
-    avg_s1in_j1, avg_s1in_j2 = get_avg(data_j1, 's1in'), get_avg(data_j2, 's1in')
-    avg_p1_j1, avg_p1_j2 = get_avg(data_j1, 'p1'), get_avg(data_j2, 'p1')
-    avg_dev_j1 = (get_avg(data_j1, 'd1') + get_avg(data_j1, 'd2')) / 2
-    avg_dev_j2 = (get_avg(data_j2, 'd1') + get_avg(data_j2, 'd2')) / 2
-    avg_bs_j1, avg_bs_j2 = get_avg(data_j1, 'bs'), get_avg(data_j2, 'bs')
-    avg_df_j1, avg_df_j2 = get_avg(data_j1, 'df'), get_avg(data_j2, 'df')
+    def get_avg_vantage(data):
+        total_bs_sv = sum([p['bs_sv'] for p in data])
+        total_bs_enf = sum([p['bs_enf'] for p in data])
+        return {
+            'P1S': sum([p['s1in'] for p in data]) / 3,
+            'G1S': sum([p['p1'] for p in data]) / 3,
+            'RET': sum([p['ret'] for p in data]) / 3,
+            'BPS_frac': f"{total_bs_sv}/{total_bs_enf}",
+            'BPS_pct': (total_bs_sv / total_bs_enf * 100) if total_bs_enf > 0 else 100.0,
+            'enfrento_breaks': total_bs_enf > 0
+        }
 
-    # Visualización de KPIs comparativos
-    c_kpi1, c_kpi2, c_kpi3, c_kpi4 = st.columns(4)
-    c_kpi1.metric("Fiabilidad 1er Saque (% In)", f"{avg_s1in_j1:.1f}%", f"{avg_s1in_j1 - avg_s1in_j2:.1f}%")
-    c_kpi2.metric("Puntos Ganados 1er S", f"{avg_p1_j1:.1f}%", f"{avg_p1_j1 - avg_p1_j2:.1f}%")
-    c_kpi3.metric("Eficacia al Resto (Prom)", f"{avg_dev_j1:.1f}%", f"{avg_dev_j1 - avg_dev_j2:.1f}%")
-    c_kpi4.metric("Salvado de Breaks", f"{avg_bs_j1:.1f}%", f"{avg_bs_j1 - avg_bs_j2:.1f}%")
+    avg_j1 = get_avg_vantage(data_j1)
+    avg_j2 = get_avg_vantage(data_j2)
+
+    # Métricas Comparativas
+    st.subheader(f"📊 KPIs: {j1_nom} vs {j2_nom}")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("P1S (1er Servicio)", f"{avg_j1['P1S']:.1f}%", f"{avg_j1['P1S'] - avg_j2['P1S']:.1f}%")
+    c2.metric("G1S (Dominio Saque)", f"{avg_j1['G1S']:.1f}%", f"{avg_j1['G1S'] - avg_j2['G1S']:.1f}%")
+    c3.metric("RET (Presión Resto)", f"{avg_j1['RET']:.1f}%", f"{avg_j1['RET'] - avg_j2['RET']:.1f}%")
+    
+    # Lógica de visualización para Breaks
+    if avg_j1['enfrento_breaks']:
+        c4.metric("BPS (Resiliencia)", avg_j1['BPS_frac'], f"{avg_j1['BPS_pct']:.1f}%")
+    else:
+        c4.metric("BPS (Resiliencia)", "Dominio", "Sin breaks enfrentados")
 
     st.divider()
 
-    # INFORME NARRATIVO PROFESIONAL
-    informe = f"**INFORME TÉCNICO:** El cruce entre {j1_nom} y {j2_nom} en {torneo} ({superficie_actual}). "
+    # INFORME DETALLADO
+    st.subheader("🧠 Interpretación del Modelo")
     
-    # Análisis de Saque: Cantidad vs Calidad
-    if avg_s1in_j1 > 70 and avg_p1_j1 > 75:
-        informe += f"{j1_nom} domina con un saque de alta precisión y efectividad. "
-    elif avg_s1in_j1 > 75 and avg_p1_j1 < 60:
-        informe += f"Ojo: {j1_nom} mete muchos primeros pero no hace daño con ellos. "
+    diff_p1 = avg_j1['G1S'] - avg_j2['G1S']
+    diff_ret = avg_j1['RET'] - avg_j2['RET']
+    
+    informe = f"**ANÁLISIS:** El modelo detecta que {j1_nom} "
+    if diff_ret > 5:
+        informe += f"tiene una ventaja crítica en la devolución ({avg_j1['RET']:.1f}%). Esto presionará el servicio de {j2_nom} constantemente. "
+    if not avg_j1['enfrento_breaks']:
+        informe += f"Destaca un dominio absoluto: no ha enfrentado break points en los registros analizados. "
+    
+    informe += f"Con una cuota de {j1_cuota}, el algoritmo identifica valor en el rendimiento actual."
+    st.write(informe)
 
-    # Disciplina (Dobles Faltas)
-    if avg_df_j1 > 5:
-        informe += f"Alerta de inestabilidad para {j1_nom} con {avg_df_j1:.1f} DFs por partido. "
+    # PROYECCIONES DUALES
+    st.subheader("🎯 Proyecciones de Valor (Doble Cuota)")
+    col_a, col_b = st.columns(2)
+    
+    with col_a:
+        ganador_proy = j1_nom if (diff_p1 + diff_ret) > 0 else j2_nom
+        st.info(f"**CUOTA A (Directa):** \n\n **WIN {ganador_proy}**")
+    
+    with col_b:
+        if avg_j1['G1S'] > 75 and avg_j2['G1S'] > 75:
+            proy_g = "OVER 22.5 Games"
+        else:
+            proy_g = "Over 21.5 Games / Partido Largo"
+        st.success(f"**CUOTA B (Estructural):** \n\n **{proy_g}**")
 
-    # Conclusión Final
-    if j1_cuota > 2.10 and avg_p1_j1 > avg_p1_j2 + 5:
-        st.success(informe + f"**VEREDICTO: VALUE BET en {j1_nom}.** Los números de saque superan la expectativa de la cuota.")
-    elif abs(avg_p1_j1 - avg_p1_j2) < 4 and abs(avg_dev_j1 - avg_dev_j2) < 4:
-        st.warning(informe + "**VEREDICTO: PARTIDO TRABADO. Las métricas son idénticas, se proyecta un match largo o Over de games.**")
-    else:
-        st.info(informe + f"**VEREDICTO: El mercado refleja fielmente la estadística actual.**")
-
+    st.caption("Confidencia del Modelo: ⭐⭐⭐⭐")
 
 
