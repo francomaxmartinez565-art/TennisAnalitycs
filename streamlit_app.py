@@ -15,13 +15,13 @@ with col_m1:
     superficie_actual = st.selectbox("Superficie Actual", ["Arcilla", "Dura", "Césped", "Indoor"])
     h2h = st.text_input("Historial H2H", "0-0")
 with col_m2:
-    j1_nom = st.text_input("Jugador 1", "R. Jódar")
-    j1_rank = st.number_input("Rank J1", 1, 1000, 42) 
-    j1_cuota = st.number_input("Cuota J1", 1.0, 50.0, 2.50)
+    j1_nom = st.text_input("Jugador 1", "Djokovic")
+    j1_rank = st.number_input("Rank J1", 1, 1000, 1) 
+    j1_cuota = st.number_input("Cuota J1", 1.0, 50.0, 1.90)
 with col_m3:
-    j2_nom = st.text_input("Jugador 2", "A. De Miñaur")
-    j2_rank = st.number_input("Rank J2", 1, 1000, 8) 
-    j2_cuota = st.number_input("Cuota J2", 1.0, 50.0, 1.50)
+    j2_nom = st.text_input("Jugador 2", "Federer")
+    j2_rank = st.number_input("Rank J2", 1, 1000, 1) 
+    j2_cuota = st.number_input("Cuota J2", 1.0, 50.0, 1.90)
 
 st.divider()
 
