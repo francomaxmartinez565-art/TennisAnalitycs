@@ -34,7 +34,7 @@ def cargar_jugador_full(nombre):
             c1, c1_f, c2, c2_r, c3 = st.columns([1.5, 1, 1, 1, 1])
             with c1: rival = st.text_input(f"Rival", f"Rival {i+1}", key=f"r_{nombre}_{i}")
             with c1_f: fecha_partido = st.date_input("Fecha", date.today(), key=f"f_{nombre}_{i}")
-            with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió"], key=f"res_{nombre}_{i}")
+            with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió", "Gano por retiro", "Perdio por retiro"], key=f"res_{nombre}_{i}")
             # --- RANKING DEL RIVAL REINCORPORADO ---
             with c2_r: r_rank = st.number_input("Rank Rival", 1, 1000, 50, key=f"rr_{nombre}_{i}")
             with c3: surf = st.selectbox(f"Superficie", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
