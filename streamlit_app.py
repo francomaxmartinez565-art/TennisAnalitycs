@@ -66,12 +66,13 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
         return {
             'P1S': sum([p['s1in'] for p in data]) / 3,
             'G1S': sum([p['p1'] for p in data]) / 3,
-            'G2S': sum([p['p2'] for p in data]) / 3,
-            'G1Dev': sum([p['d1'] for p in data]) / 3,
-            'BPS_frac': f"{total_sv if (total_sv := sum([p['bs_sv'] for p in data])) else 0}/{total_enf}",
+            'RET': sum([p['ret'] for p in data]) / 3,
+            'BPS_frac': f"{total_bs_sv}/{total_bs_enf}",
             'BPS_pct': (total_bs_sv / total_bs_enf * 100) if total_bs_enf > 0 else 100.0,
             'enfrento_breaks': total_bs_enf > 0
         }
+
+
 
     avg_j1 = get_avg_vantage(data_j1)
     avg_j2 = get_avg_vantage(data_j2)
