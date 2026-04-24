@@ -1,32 +1,11 @@
 import streamlit as st
 from datetime import date
-from PIL import Image
-import numpy as np
-
-# Intentamos importar pytesseract, si no está, la app seguirá funcionando en modo manual
-try:
-    import pytesseract
-    OCR_DISPONIBLE = True
-except ImportError:
-    OCR_DISPONIBLE = False
 
 # Configuración de la App
-st.set_page_config(page_title="Vantaje Algoritmo v2.8.5 - PRO", layout="wide")
+st.set_page_config(page_title="Vantaje Algoritmo v2.8.4", layout="wide")
 
-st.title("🎾 Vantaje Algoritmo v2.8.5")
-st.markdown("### Dashboard de Análisis Predictivo & Automatización")
-
-# --- SECCIÓN 0: AUTOMATIZACIÓN (OCR) ---
-st.sidebar.header("📸 Carga Automática")
-archivo_stats = st.sidebar.file_uploader("Subir captura de Flashscore", type=["jpg", "png", "jpeg"])
-
-if archivo_stats:
-    st.sidebar.image(archivo_stats, caption="Captura cargada", use_container_width=True)
-    if OCR_DISPONIBLE:
-        st.sidebar.success("Imagen detectada. Procesando texto...")
-        # Aquí es donde el motor leería la imagen en el futuro
-    else:
-        st.sidebar.warning("Motor de lectura (OCR) en espera de configuración.")
+st.title("🎾 Vantaje Algoritmo v2.8.4")
+st.markdown("### Dashboard de Análisis Predictivo & Educación Estratégica")
 
 # --- SECCIÓN 1: CONFIGURACIÓN DEL ENCUENTRO ---
 st.header("1. Configuración del Encuentro")
@@ -76,7 +55,7 @@ data_j1 = cargar_jugador_full(j1_nom)
 st.divider()
 data_j2 = cargar_jugador_full(j2_nom)
 
-# --- SECCIÓN 3: PROCESAMIENTO Y VEREDICTO ---
+# --- SECCIÓN 3: VEREDICTO ---
 if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     st.header(f"📋 Informe Técnico: {j1_nom} vs {j2_nom}")
     
@@ -101,7 +80,7 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     underdog = j2_nom if ganador_proy == j1_nom else j1_nom
 
     # Visualización de Métricas
-    st.subheader("📊 Comparativa de Rendimiento Proyectado")
+    st.subheader("📊 Métricas Comparativas Proyectadas")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("G1S (Poder)", f"{avg_j1['G1S']:.1f}%", f"{avg_j1['G1S'] - avg_j2['G1S']:.1f}%")
     c2.metric("G2S (Seguridad)", f"{avg_j1['G2S']:.1f}%", f"{avg_j1['G2S'] - avg_j2['G2S']:.1f}%")
@@ -110,7 +89,7 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
 
     st.divider()
 
-    # Variables de Cuotas y Hándicaps
+    # Variables de Valor y Hándicaps
     st.subheader("🎯 Variables de Valor y Hándicaps")
     col_v1, col_v2, col_v3 = st.columns(3)
 
@@ -135,15 +114,24 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     st.markdown("---")
     st.markdown("### 📝 Argumento Estratégico")
     st.info(f"""
-    El algoritmo detecta valor en **{ganador_proy}**. El diferencial de {diff_puntos:.1f}% en eficiencia 
-    bajo las condiciones de **{superficie_actual}** indica que {ganador_proy} tiene un mayor control sobre los puntos críticos. 
-    La clave será el aprovechamiento del G1S para evitar quiebres de **{underdog}**.
+    El análisis proyecta valor en **{ganador_proy}**. El diferencial de {diff_puntos:.1f}% en eficiencia 
+    bajo las condiciones de **{superficie_actual}** indica un mejor control de los puntos clave. 
+    La clave será la protección del primer servicio para neutralizar el resto de **{underdog}**.
     """)
 
     # Píldora Educativa
     st.divider()
     st.subheader("🎓 Píldora Educativa Vantaje")
-    with st.expander("📘 Concepto: La Resiliencia en el Tenis (BPS)", expanded=True):
-        st.write(f"En este encuentro, {j1_nom} presenta un BPS del {avg_j1['BPS_pct']:.1f}%.")
-        st.write("Saber salvar puntos de quiebre (Break Points Saved) no es suerte; es jerarquía mental. Los jugadores que mantienen la calma en el 30-40 o en ventajas negativas suelen cubrir sus hándicaps con mayor frecuencia.")
+    
+    if avg_j1['G1S'] > 75 or avg_j2['G1S'] > 75:
+        concepto = "Dominio del Primer Servicio"
+        leccion = "Un G1S superior al 75% indica que el sacador dicta el ritmo. En estos casos, los quiebres son raros y los partidos suelen irse a sets largos o tie-breaks."
+    elif abs(avg_j1['G1Dev'] - avg_j2['G1Dev']) > 15:
+        concepto = "Diferencial de Retorno"
+        leccion = "Si un jugador devuelve significativamente mejor que el otro, el ranking importa menos. La capacidad de poner la pelota en juego y generar presión constante suele romper la resistencia del sacador."
+    else:
+        concepto = "Resiliencia (BPS)"
+        leccion = "El Break Point Saved (BPS) es una métrica de jerarquía mental. Salvar puntos de quiebre en momentos críticos es lo que permite cubrir hándicaps ajustados."
 
+    with st.expander(f"📘 Concepto: {concepto}", expanded=True):
+        st.write(leccion)
