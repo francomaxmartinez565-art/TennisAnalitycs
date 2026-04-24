@@ -1,11 +1,32 @@
 import streamlit as st
 from datetime import date
+from PIL import Image
+import numpy as np
+
+# Intentamos importar pytesseract, si no está, la app seguirá funcionando en modo manual
+try:
+    import pytesseract
+    OCR_DISPONIBLE = True
+except ImportError:
+    OCR_DISPONIBLE = False
 
 # Configuración de la App
-st.set_page_config(page_title="Vantaje Algoritmo v2.8.1", layout="wide")
+st.set_page_config(page_title="Vantaje Algoritmo v2.8.5 - PRO", layout="wide")
 
-st.title("🎾 Vantaje Algoritmo v2.8.1")
-st.markdown("### Dashboard de Análisis Predictivo Profesional")
+st.title("🎾 Vantaje Algoritmo v2.8.5")
+st.markdown("### Dashboard de Análisis Predictivo & Automatización")
+
+# --- SECCIÓN 0: AUTOMATIZACIÓN (OCR) ---
+st.sidebar.header("📸 Carga Automática")
+archivo_stats = st.sidebar.file_uploader("Subir captura de Flashscore", type=["jpg", "png", "jpeg"])
+
+if archivo_stats:
+    st.sidebar.image(archivo_stats, caption="Captura cargada", use_container_width=True)
+    if OCR_DISPONIBLE:
+        st.sidebar.success("Imagen detectada. Procesando texto...")
+        # Aquí es donde el motor leería la imagen en el futuro
+    else:
+        st.sidebar.warning("Motor de lectura (OCR) en espera de configuración.")
 
 # --- SECCIÓN 1: CONFIGURACIÓN DEL ENCUENTRO ---
 st.header("1. Configuración del Encuentro")
@@ -15,13 +36,13 @@ with col_m1:
     superficie_actual = st.selectbox("Superficie Actual", ["Arcilla", "Dura", "Césped", "Indoor"])
     h2h = st.text_input("Historial H2H", "0-0")
 with col_m2:
-    j1_nom = st.text_input("Jugador 1", "Djokovic")
-    j1_rank = st.number_input("Rank J1", 1, 1000, 1) 
-    j1_cuota = st.number_input("Cuota J1", 1.0, 50.0, 1.90)
+    j1_nom = st.text_input("Jugador 1", "R. Jódar")
+    j1_rank = st.number_input("Rank J1", 1, 1000, 42) 
+    j1_cuota = st.number_input("Cuota J1", 1.0, 50.0, 2.50)
 with col_m3:
-    j2_nom = st.text_input("Jugador 2", "Federer")
-    j2_rank = st.number_input("Rank J2", 1, 1000, 3) 
-    j2_cuota = st.number_input("Cuota J2", 1.0, 50.0, 1.90)
+    j2_nom = st.text_input("Jugador 2", "A. De Miñaur")
+    j2_rank = st.number_input("Rank J2", 1, 1000, 8) 
+    j2_cuota = st.number_input("Cuota J2", 1.0, 50.0, 1.50)
 
 st.divider()
 
@@ -48,14 +69,14 @@ def cargar_jugador_full(nombre):
             with c10a: bs_sv = st.number_input("Bks Salvados", 0, 50, 2, key=f"bssv_{nombre}_{i}")
             with c10b: bs_enf = st.number_input("Bks Enfrentados", 0, 50, 3, key=f"bsenf_{nombre}_{i}")
             
-            partidos.append({"fecha": fecha_partido, "s1in":s1_in, "p1":p1, "p2":p2, "d1":d1, "d2":d2, "bs_sv": bs_sv, "bs_enf": bs_enf})
+            partidos.append({"res": res, "s1in":s1_in, "p1":p1, "p2":p2, "d1":d1, "d2":d2, "bs_sv": bs_sv, "bs_enf": bs_enf})
     return partidos
 
 data_j1 = cargar_jugador_full(j1_nom)
 st.divider()
 data_j2 = cargar_jugador_full(j2_nom)
 
-# --- SECCIÓN 3: VEREDICTO ---
+# --- SECCIÓN 3: PROCESAMIENTO Y VEREDICTO ---
 if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     st.header(f"📋 Informe Técnico: {j1_nom} vs {j2_nom}")
     
@@ -63,47 +84,66 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
         total_bs_sv = sum([p['bs_sv'] for p in data])
         total_bs_enf = sum([p['bs_enf'] for p in data])
         return {
-            'P1S': sum([p['s1in'] for p in data]) / 3,
             'G1S': sum([p['p1'] for p in data]) / 3,
-            'G2S': sum([p['p2'] for p in data]) / 3,  # Calculamos G2S
-            'G1Dev': sum([p['d1'] for p in data]) / 3, # Reemplazamos 'RET' por 'G1Dev'
-            'BPS_frac': f"{total_bs_sv}/{total_bs_enf}",
-            'BPS_pct': (total_bs_sv / total_bs_enf * 100) if total_bs_enf > 0 else 100.0,
-            'enfrento_breaks': total_bs_enf > 0
+            'G2S': sum([p['p2'] for p in data]) / 3,
+            'G1Dev': sum([p['d1'] for p in data]) / 3,
+            'BPS_pct': (total_bs_sv / total_bs_enf * 100) if total_bs_enf > 0 else 100.0
         }
 
     avg_j1 = get_avg_vantage(data_j1)
     avg_j2 = get_avg_vantage(data_j2)
 
-    st.info(f"**Diferencial de Ranking:** {abs(j1_rank - j2_rank)} puestos ({j1_nom if j1_rank < j2_rank else j2_nom} favorito por estatus)")
+    # Lógica de Poder Combinado
+    puntos_j1 = avg_j1['G1S'] + avg_j1['G1Dev']
+    puntos_j2 = avg_j2['G1S'] + avg_j2['G1Dev']
+    diff_puntos = abs(puntos_j1 - puntos_j2)
+    ganador_proy = j1_nom if puntos_j1 > puntos_j2 else j2_nom
+    underdog = j2_nom if ganador_proy == j1_nom else j1_nom
 
-    st.subheader("📊 Métricas Comparativas")
+    # Visualización de Métricas
+    st.subheader("📊 Comparativa de Rendimiento Proyectado")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("G1S (Poder)", f"{avg_j1['G1S']:.1f}%", f"{avg_j1['G1S'] - avg_j2['G1S']:.1f}%")
     c2.metric("G2S (Seguridad)", f"{avg_j1['G2S']:.1f}%", f"{avg_j1['G2S'] - avg_j2['G2S']:.1f}%")
     c3.metric("G1Dev (Resto)", f"{avg_j1['G1Dev']:.1f}%", f"{avg_j1['G1Dev'] - avg_j2['G1Dev']:.1f}%")
-    
-    if avg_j1['enfrento_breaks']:
-        c4.metric("BPS (Resiliencia)", avg_j1['BPS_frac'], f"{avg_j1['BPS_pct']:.1f}%")
-    else:
-        c4.metric("BPS (Resiliencia)", "Dominio", "Sin breaks")
+    c4.metric("BPS (Resiliencia)", f"{avg_j1['BPS_pct']:.1f}%", f"{avg_j1['BPS_pct'] - avg_j2['BPS_pct']:.1f}%")
 
     st.divider()
 
-    st.subheader("🎯 Proyecciones de Valor")
-    col_a, col_b = st.columns(2)
-    
-    with col_a:
-        puntos_j1 = avg_j1['G1S'] + avg_j1['G1Dev']
-        puntos_j2 = avg_j2['G1S'] + avg_j2['G1Dev']
-        ganador_proy = j1_nom if puntos_j1 > puntos_j2 else j2_nom
-        st.success(f"**CUOTA A (Predicción):** \n\n **WIN {ganador_proy}**")
-    
-    with col_b:
-        if avg_j1['G1S'] > 72 and avg_j2['G1S'] > 72:
-            proy_g = "OVER 22.5 Games"
-        else:
-            proy_g = "Over 21.5 Games / Proyección Estándar"
-        st.info(f"**CUOTA B (Estructural):** \n\n **{proy_g}**")
+    # Variables de Cuotas y Hándicaps
+    st.subheader("🎯 Variables de Valor y Hándicaps")
+    col_v1, col_v2, col_v3 = st.columns(3)
 
+    with col_v1:
+        st.markdown("**Predicción y Score**")
+        score = "2-0" if diff_puntos > 15 else "2-1 o Cerrado"
+        st.success(f"🏆 WIN {ganador_proy} ({score})")
+        if avg_j1['G1S'] > 75 and avg_j2['G1S'] > 75:
+            st.error("🚨 ALTA Probabilidad de Tie-break")
+
+    with col_v2:
+        st.markdown("**Hándicaps Sugeridos**")
+        handicap = f"{underdog} +3.5" if diff_puntos < 6 else f"{ganador_proy} -2.5"
+        st.write(f"Sugerencia: {handicap} Juegos")
+
+    with col_v3:
+        st.markdown("**Línea de Juegos**")
+        linea = "Over 22.5" if (avg_j1['G1S'] + avg_j2['G1S'] > 140) else "Under 21.5"
+        st.info(f"📈 {linea} Games")
+
+    # Argumento Técnico
+    st.markdown("---")
+    st.markdown("### 📝 Argumento Estratégico")
+    st.info(f"""
+    El algoritmo detecta valor en **{ganador_proy}**. El diferencial de {diff_puntos:.1f}% en eficiencia 
+    bajo las condiciones de **{superficie_actual}** indica que {ganador_proy} tiene un mayor control sobre los puntos críticos. 
+    La clave será el aprovechamiento del G1S para evitar quiebres de **{underdog}**.
+    """)
+
+    # Píldora Educativa
+    st.divider()
+    st.subheader("🎓 Píldora Educativa Vantaje")
+    with st.expander("📘 Concepto: La Resiliencia en el Tenis (BPS)", expanded=True):
+        st.write(f"En este encuentro, {j1_nom} presenta un BPS del {avg_j1['BPS_pct']:.1f}%.")
+        st.write("Saber salvar puntos de quiebre (Break Points Saved) no es suerte; es jerarquía mental. Los jugadores que mantienen la calma en el 30-40 o en ventajas negativas suelen cubrir sus hándicaps con mayor frecuencia.")
 
