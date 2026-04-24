@@ -37,7 +37,7 @@ def cargar_jugador_full(nombre):
             with c1_f: fecha_partido = st.date_input("Fecha", date.today(), key=f"f_{nombre}_{i}") # NUEVO
             with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió", "Gano por retiro", "Perdio por retiro"], key=f"res_{nombre}_{i}")
             with c2_r: r_rank = st.number_input("Rank Rival", 1, 1000, 100, key=f"rr_{nombre}_{i}")
-            with c3: surf = st.selectbox(f"Surf", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
+            with c3: surf = st.selectbox(f"Superficie", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
             
             st.markdown("**Estadísticas del Match:**")
             c5, c6, c7, c8, c9, c10a, c10b = st.columns([1, 1, 1, 1, 1, 1, 1])
