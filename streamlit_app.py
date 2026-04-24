@@ -2,9 +2,9 @@ import streamlit as st
 from datetime import date
 
 # Configuración de la App
-st.set_page_config(page_title="Vantaje Algoritmo v2.8.7", layout="wide")
+st.set_page_config(page_title="Vantaje Algoritmo v2.8.8", layout="wide")
 
-st.title("🎾 Vantaje Algoritmo v2.8.7")
+st.title("🎾 Vantaje Algoritmo v2.8.8")
 st.markdown("### Dashboard Pro: Análisis, Educación y Respaldo")
 
 # --- SECCIÓN 1: CONFIGURACIÓN DEL ENCUENTRO ---
@@ -35,7 +35,6 @@ def cargar_jugador_full(nombre):
             with c1: rival = st.text_input(f"Rival", f"Rival {i+1}", key=f"r_{nombre}_{i}")
             with c1_f: fecha_partido = st.date_input("Fecha", date.today(), key=f"f_{nombre}_{i}")
             with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió", "Gano por retiro", "Perdio por retiro"], key=f"res_{nombre}_{i}")
-            # --- RANKING DEL RIVAL REINCORPORADO ---
             with c2_r: r_rank = st.number_input("Rank Rival", 1, 1000, 50, key=f"rr_{nombre}_{i}")
             with c3: surf = st.selectbox(f"Superficie", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
             
@@ -74,5 +73,31 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     ganador_proy = j1_nom if puntos_j1 > puntos_j2 else j2_nom
     diff_puntos = abs(puntos_j1 - puntos_j2)
     
-    st.header
+    # --- CORRECCIÓN DEL ERROR DE HEADER ---
+    st.header(f"📋 Informe Técnico: {j1_nom} vs {j2_nom}")
+    
+    # Generador de Post para X
+    c_verde = f"Win {ganador_proy} @{min(j1_cuota, j2_cuota)}"
+    c_amarilla = "Over 22.5 Games @1.90"
+    c_roja = f"Win {ganador_proy} 2-0 @{max(j1_cuota, j2_cuota) * 0.8:.2f}"
+
+    st.subheader("📱 Generador de Post para X")
+    texto_post = f"""🎾 Vantaje Report: {j1_nom} vs {j2_nom}
+
+🟢 {c_verde}
+🟡 {c_amarilla}
+🔴 {c_roja}
+
+📊 Dato Vantaje: {ganador_proy} con {max(avg_j1_p1, avg_j2_p1):.1f}% G1S y {max(bps_j1, bps_j2):.1f}% BPS.
+
+#TennisBets #ATP #VantajeAlgoritmo"""
+    
+    st.text_area("Copia y pega en tu perfil:", texto_post, height=180)
+    
+    st.divider()
+    col_res1, col_res2 = st.columns(2)
+    col_res1.metric(f"Poder {j1_nom}", f"{puntos_j1:.1f}", f"BPS: {bps_j1:.1f}%")
+    col_res2.metric(f"Poder {j2_nom}", f"{puntos_j2:.1f}", f"BPS: {bps_j2:.1f}%")
+
+
 
