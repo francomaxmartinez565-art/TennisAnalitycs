@@ -31,16 +31,17 @@ def cargar_jugador_full(nombre):
     partidos = []
     for i in range(3):
         with st.expander(f"Partido Reciente {i+1}", expanded=(i==0)):
-            c1, c2, c2_r, c3 = st.columns([2, 1, 1, 1])
+            # Fila de contexto: Agregamos el selector de FECHA
+            c1, c1_f, c2, c2_r, c3 = st.columns([1.5, 1, 1, 1, 1])
             with c1: rival = st.text_input(f"Rival", f"Rival {i+1}", key=f"r_{nombre}_{i}")
+            with c1_f: fecha_partido = st.date_input("Fecha", date.today(), key=f"f_{nombre}_{i}") # NUEVO
             with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió", "Gano por retiro", "Perdio por retiro"], key=f"res_{nombre}_{i}")
             with c2_r: r_rank = st.number_input("Rank Rival", 1, 1000, 100, key=f"rr_{nombre}_{i}")
-            with c3: surf = st.selectbox(f"Superficie", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
+            with c3: surf = st.selectbox(f"Surf", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
             
             st.markdown("**Estadísticas del Match:**")
-            # Ampliamos a más columnas para que entren G2S, G1Dev y G2Dev
             c5, c6, c7, c8, c9, c10a, c10b = st.columns([1, 1, 1, 1, 1, 1, 1])
-            with c5: s1_in = st.number_input("% P1S", 0, 100, 65, key=f"s1in_{nombre}_{i}")
+            with c5: s1_in = st.number_input("% P1S", 0, 100, 65, key=f"p1s_{nombre}_{i}")
             with c6: p1 = st.number_input("% G1S", 0, 100, 70, key=f"p1_{nombre}_{i}")
             with c7: p2 = st.number_input("% G2S", 0, 100, 50, key=f"p2_{nombre}_{i}")
             with c8: d1 = st.number_input("% G1Dev", 0, 100, 30, key=f"d1_{nombre}_{i}")
@@ -48,7 +49,7 @@ def cargar_jugador_full(nombre):
             with c10a: bs_sv = st.number_input("Bks Salvados", 0, 50, 2, key=f"bssv_{nombre}_{i}")
             with c10b: bs_enf = st.number_input("Bks Enfrentados", 0, 50, 3, key=f"bsenf_{nombre}_{i}")
             
-            partidos.append({"s1in":s1_in, "p1":p1, "p2":p2, "d1":d1, "d2":d2, "bs_sv": bs_sv, "bs_enf": bs_enf})
+            partidos.append({"fecha": fecha_partido, "s1in":s1_in, "p1":p1, "p2":p2, "d1":d1, "d2":d2, "bs_sv": bs_sv, "bs_enf": bs_enf})
     return partidos
 
 data_j1 = cargar_jugador_full(j1_nom)
@@ -67,7 +68,7 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
             'G1S': sum([p['p1'] for p in data]) / 3,
             'G2S': sum([p['p2'] for p in data]) / 3,
             'G1Dev': sum([p['d1'] for p in data]) / 3,
-            'BPS_frac': f"{total_bs_sv}/{total_bs_enf}",
+            'BPS_frac': f"{total_sv if (total_sv := sum([p['bs_sv'] for p in data])) else 0}/{total_enf}",
             'BPS_pct': (total_bs_sv / total_bs_enf * 100) if total_bs_enf > 0 else 100.0,
             'enfrento_breaks': total_bs_enf > 0
         }
