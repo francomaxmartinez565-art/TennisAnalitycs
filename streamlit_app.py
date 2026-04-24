@@ -31,10 +31,9 @@ def cargar_jugador_full(nombre):
     partidos = []
     for i in range(3):
         with st.expander(f"Partido Reciente {i+1}", expanded=(i==0)):
-            # Fila de contexto: Agregamos el selector de FECHA
             c1, c1_f, c2, c2_r, c3 = st.columns([1.5, 1, 1, 1, 1])
             with c1: rival = st.text_input(f"Rival", f"Rival {i+1}", key=f"r_{nombre}_{i}")
-            with c1_f: fecha_partido = st.date_input("Fecha", date.today(), key=f"f_{nombre}_{i}") # NUEVO
+            with c1_f: fecha_partido = st.date_input("Fecha", date.today(), key=f"f_{nombre}_{i}")
             with c2: res = st.selectbox("Resultado", ["Ganó", "Perdió", "Gano por retiro", "Perdio por retiro"], key=f"res_{nombre}_{i}")
             with c2_r: r_rank = st.number_input("Rank Rival", 1, 1000, 100, key=f"rr_{nombre}_{i}")
             with c3: surf = st.selectbox(f"Superficie", ["Arcilla", "Dura", "Césped", "Indoor"], key=f"s_{nombre}_{i}")
@@ -66,13 +65,12 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
         return {
             'P1S': sum([p['s1in'] for p in data]) / 3,
             'G1S': sum([p['p1'] for p in data]) / 3,
-            'RET': sum([p['ret'] for p in data]) / 3,
+            'G2S': sum([p['p2'] for p in data]) / 3,  # Calculamos G2S
+            'G1Dev': sum([p['d1'] for p in data]) / 3, # Reemplazamos 'RET' por 'G1Dev'
             'BPS_frac': f"{total_bs_sv}/{total_bs_enf}",
             'BPS_pct': (total_bs_sv / total_bs_enf * 100) if total_bs_enf > 0 else 100.0,
             'enfrento_breaks': total_bs_enf > 0
         }
-
-
 
     avg_j1 = get_avg_vantage(data_j1)
     avg_j2 = get_avg_vantage(data_j2)
