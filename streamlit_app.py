@@ -2,10 +2,10 @@ import streamlit as st
 from datetime import date
 
 # Configuración de la App
-st.set_page_config(page_title="Vantaje Algoritmo v2.8.8", layout="wide")
+st.set_page_config(page_title="Vantaje Algoritmo v2.8.9", layout="wide")
 
-st.title("🎾 Vantaje Algoritmo v2.8.8")
-st.markdown("### Dashboard Pro: Análisis, Educación y Respaldo")
+st.title("🎾 Vantaje Algoritmo v2.8.9")
+st.markdown("### Dashboard Pro: Análisis Dinámico")
 
 # --- SECCIÓN 1: CONFIGURACIÓN DEL ENCUENTRO ---
 st.header("1. Configuración del Encuentro")
@@ -71,22 +71,29 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     puntos_j1 = avg_j1_p1 + avg_j1_d1
     puntos_j2 = avg_j2_p1 + avg_j2_d1
     ganador_proy = j1_nom if puntos_j1 > puntos_j2 else j2_nom
-    diff_puntos = abs(puntos_j1 - puntos_j2)
     
-    # --- CORRECCIÓN DEL ERROR DE HEADER ---
     st.header(f"📋 Informe Técnico: {j1_nom} vs {j2_nom}")
     
-    # Generador de Post para X
-    c_verde = f"Win {ganador_proy} @{min(j1_cuota, j2_cuota)}"
-    c_amarilla = "Over 22.5 Games @1.90"
-    c_roja = f"Win {ganador_proy} 2-0 @{max(j1_cuota, j2_cuota) * 0.8:.2f}"
+    # --- LÓGICA DE JUGADAS REALISTA ---
+    j_verde = f"Win {ganador_proy}"
+    
+    # La línea amarilla ahora es DINÁMICA
+    # Si la suma de efectividad de primer saque es alta, sugiere Over. Si es baja, Under.
+    if (avg_j1_p1 + avg_j2_p1) > 145:
+        j_amarilla = "Over 22.5 Games"
+    elif (avg_j1_p1 + avg_j2_p1) < 125:
+        j_amarilla = "Under 20.5 Games"
+    else:
+        j_amarilla = "Over 21.5 Games"
+
+    j_roja = f"Win {ganador_proy} 2-1" if abs(puntos_j1 - puntos_j2) < 10 else f"Win {ganador_proy} 2-0"
 
     st.subheader("📱 Generador de Post para X")
     texto_post = f"""🎾 Vantaje Report: {j1_nom} vs {j2_nom}
 
-🟢 {c_verde}
-🟡 {c_amarilla}
-🔴 {c_roja}
+🟢 {j_verde}
+🟡 {j_amarilla}
+🔴 {j_roja}
 
 📊 Dato Vantaje: {ganador_proy} con {max(avg_j1_p1, avg_j2_p1):.1f}% G1S y {max(bps_j1, bps_j2):.1f}% BPS.
 
@@ -98,6 +105,5 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     col_res1, col_res2 = st.columns(2)
     col_res1.metric(f"Poder {j1_nom}", f"{puntos_j1:.1f}", f"BPS: {bps_j1:.1f}%")
     col_res2.metric(f"Poder {j2_nom}", f"{puntos_j2:.1f}", f"BPS: {bps_j2:.1f}%")
-
 
 
