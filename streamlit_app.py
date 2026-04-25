@@ -1,11 +1,11 @@
 import streamlit as st
 from datetime import date
 
-# Configuración v2.9.0
-st.set_page_config(page_title="Vantaje Algoritmo v2.9.0", layout="wide")
+# Configuración v2.9.5 - Optimización de Aciertos
+st.set_page_config(page_title="Vantaje Algoritmo v2.9.5", layout="wide")
 
-st.title("🎾 Vantaje Algoritmo v2.9.0")
-st.markdown("### Dashboard Pro: Análisis de Probabilidades")
+st.title("🎾 Vantaje Algoritmo v2.9.5")
+st.markdown("### Dashboard Pro: Optimización de Aciertos y Jerarquía")
 
 # --- SECCIÓN 1: CONFIGURACIÓN ---
 st.header("1. Configuración del Encuentro")
@@ -55,7 +55,7 @@ data_j1 = cargar_jugador_full(j1_nom)
 st.divider()
 data_j2 = cargar_jugador_full(j2_nom)
 
-# --- SECCIÓN 3: RESULTADOS ---
+# --- SECCIÓN 3: PROCESAMIENTO OPTIMIZADO ---
 if st.button("EJECUTAR ANÁLISIS VANTAGE"):
     def stats(data):
         avg_p1 = sum([p['p1'] for p in data]) / 3
@@ -66,21 +66,37 @@ if st.button("EJECUTAR ANÁLISIS VANTAGE"):
 
     p1_j1, d1_j1, bps_j1 = stats(data_j1)
     p1_j2, d1_j2, bps_j2 = stats(data_j2)
-    poder_j1 = p1_j1 + d1_j1
-    poder_j2 = p1_j2 + d1_j2
-    ganador = j1_nom if poder_j1 > poder_j2 else j2_nom
-    dif = abs(poder_j1 - poder_j2)
 
-    # Lógica de mercado
-    j_verde = f"Win {ganador}"
-    # Línea de juegos basada en la suma de G1S de ambos
-    suma_saque = p1_j1 + p1_j2
-    if suma_saque > 150: j_amarilla = "Over 22.5 Games"
-    elif suma_saque > 135: j_amarilla = "Over 21.5 Games"
-    else: j_amarilla = "Under 21.5 Games"
+    # --- AJUSTE DE JERARQUÍA ---
+    # Bonus por ranking: el jugador mejor posicionado recibe un plus de estabilidad
+    bonus_j1 = 5 if j1_rank < j2_rank else 0
+    bonus_j2 = 5 if j2_rank < j1_rank else 0
+
+    poder_j1 = p1_j1 + d1_j1 + bonus_j1
+    poder_j2 = p1_j2 + d1_j2 + bonus_j2
     
-    j_roja = f"Win {ganador} 2-0" if dif > 12 else f"Win {ganador} 2-1"
+    dif = abs(poder_j1 - poder_j2)
+    ganador = j1_nom if poder_j1 > poder_j2 else j2_nom
+
+    # Lógica de mercado refinada
+    if dif < 5:
+        j_verde = f"Riesgo Alto (Favorito: {ganador})"
+    else:
+        j_verde = f"Win {ganador}"
+
+    suma_saque = p1_j1 + p1_j2
+    if suma_saque > 155: j_amarilla = "Over 22.5 Games"
+    elif suma_saque > 140: j_amarilla = "Over 21.5 Games"
+    else: j_amarilla = "Under 22.5 Games"
+    
+    j_roja = f"Win {ganador} 2-0" if dif > 15 else f"Win {ganador} 2-1"
 
     st.header(f"📋 Informe: {j1_nom} vs {j2_nom}")
     post = f"🎾 Vantaje Report: {j1_nom} vs {j2_nom}\n\n🟢 {j_verde}\n🟡 {j_amarilla}\n🔴 {j_roja}\n\n📊 Dato: {ganador} con {max(p1_j1, p1_j2):.1f}% G1S y {max(bps_j1, bps_j2):.1f}% BPS."
     st.text_area("Post para X:", post, height=150)
+    
+    st.divider()
+    c_res1, c_res2 = st.columns(2)
+    c_res1.metric(f"Poder {j1_nom}", f"{poder_j1:.1f}", f"Jerarquía: +{bonus_j1}")
+    c_res2.metric(f"Poder {j2_nom}", f"{poder_j2:.1f}", f"Jerarquía: +{bonus_j2}")
+
